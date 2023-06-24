@@ -1,0 +1,173 @@
+openapi: 3.0.0
+x-stoplight:
+  id: qct1ap3ff6njp
+info:
+  title: url-shortener-api
+  version: '1.0'
+servers:
+  - url: 'http://localhost:8080'
+paths:
+  '/link/{shortened_string}':
+    parameters:
+      - $ref: '#/components/parameters/shortened_string'
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '308':
+          description: Permanent Redirect (experiemental)
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+        '404':
+          $ref: '#/components/responses/ErrorResponseBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponseBody'
+      operationId: get_link
+  /link:
+    post:
+      summary: ''
+      operationId: create_link
+      responses:
+        '200':
+          $ref: '#/components/responses/CreateLinkResponseBody'
+        '401':
+          $ref: '#/components/responses/ErrorResponseBody'
+        '409':
+          $ref: '#/components/responses/ErrorResponseBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponseBody'
+      security:
+        - username_password: []
+      requestBody:
+        $ref: '#/components/requestBodies/CreateLinkRequestBody'
+  '/link/{shortened_string}/user':
+    parameters:
+      - $ref: '#/components/parameters/shortened_string'
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          $ref: '#/components/responses/GetLinkUserResponseBody'
+        '404':
+          $ref: '#/components/responses/ErrorResponseBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponseBody'
+      operationId: get_link_user
+  /user:
+    post:
+      summary: ''
+      operationId: create_user
+      responses:
+        '200':
+          description: OK
+        '409':
+          $ref: '#/components/responses/ErrorResponseBody'
+        '500':
+          $ref: '#/components/responses/ErrorResponseBody'
+      requestBody:
+        $ref: '#/components/requestBodies/CreateUserRequestBody'
+components:
+  schemas: {}
+  requestBodies:
+    CreateLinkRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              url:
+                type: string
+                format: uri
+              shortened_string:
+                type: string
+                minLength: 6
+                pattern: '^[a-zA-Z0-9]+$'
+            required:
+              - url
+    CreateUserRequestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                pattern: '^[a-zA-Z0-9_]+$'
+                minLength: 8
+                maxLength: 40
+              password:
+                type: string
+                minLength: 8
+                maxLength: 40
+                format: password
+            required:
+              - username
+              - password
+  responses:
+    CreateLinkResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              shortened_string:
+                type: string
+                pattern: '^[a-zA-Z0-9]+$'
+                minLength: 6
+              url:
+                type: string
+                format: uri
+              username:
+                type: string
+                pattern: '^[a-zA-Z0-9_]+$'
+                minLength: 8
+                maxLength: 40
+            required:
+              - shortened_string
+              - url
+              - username
+    GetLinkUserResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              username:
+                type: string
+                pattern: '^[a-zA-Z0-9_]+$'
+                minLength: 8
+                maxLength: 40
+            required:
+              - username
+    ErrorResponseBody:
+      description: Example response
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              error:
+                type: string
+            required:
+              - message
+  parameters:
+    shortened_string:
+      name: shortened_string
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-zA-Z0-9]+$'
+        minLength: 6
+  securitySchemes:
+    username_password:
+      type: http
+      scheme: basic
